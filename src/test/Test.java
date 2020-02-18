@@ -14,5 +14,21 @@ public class Test {
 //		System.out.println(a_Sender_id);
 //		int a3=Integer.parseInt(a_Sender_id);
 //		System.out.println(a3);
+		ArrayList <String> a=new ArrayList<String>();
+//		hello b=new hello("hello");
+//		hello c=new hello("world");
+//		a.add(b);
+//		a.add(c);
+//		
+//		//System.out.println(a[]);
+//		b.a="fuxk";
+//		String d=a.get(0).a;
+		String c="hello";
+		String b="world";
+		String d=c;
+		a.add(c);
+		a.add(b);
+		
+		System.out.println(d);
 	}
 }

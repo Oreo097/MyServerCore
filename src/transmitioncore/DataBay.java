@@ -25,6 +25,11 @@ public class DataBay {
 		return null;
 	}
 	public int getid() {
+		return id;
 		
+	}
+	public int creatid() {
+		
+		return id;
 	}
 }
