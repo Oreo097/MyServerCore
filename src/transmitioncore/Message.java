@@ -22,7 +22,6 @@ public class Message {
 	 */
 	public Message(String m_message) {
 		message=m_message;
-		dealMessage();
 	}
 	/*
 	 * 我觉得有必要建立测试用的推送机制
