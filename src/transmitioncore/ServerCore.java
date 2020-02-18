@@ -53,7 +53,6 @@ public class ServerCore {
 		portnumber=m_portmnuber;
 		debugmode=false;
 	}
-	
 	/*
 	 * 我觉得有必要建立测试用的推送机制
 	 * 所以写了这个函数用于debug
@@ -126,7 +125,9 @@ public class ServerCore {
 	 * 接下来就是建立用户对象了（user）
 	 * 建立对象并提供相应功能
 	 */
-	public void 
+	public void setupConnect() {
+		
+	}
 	/*
 	 * 接下来就是任务分配部分
 	 * 建立blockedThread_max个线程依次加入线程池
