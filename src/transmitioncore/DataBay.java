@@ -1,6 +1,6 @@
 package transmitioncore;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class DataBay {
 	/*
@@ -10,10 +10,21 @@ public class DataBay {
 	 */
 	/********************全局变量表*********************/
 	/********************public*********************/
-	public List <User> user_list;//存储user对象的列表【index_user】
-	public Message[][] messageArray;//存放message对象队列的列表【index_user】【index_message】
-	public boolean add[];
-	public boolean delete[];
-	public int index_message;//信息队列的索引
+	public ArrayList <User> user_list;//存储user对象的列表【index_user】
 	/********************private*********************/
+	public DataBay() {
+		user_list=new ArrayList<User>();
+	}
+
+	public User getUser(int m_id) {
+		for (User the_user : user_list) {
+			if(the_user.user_id==m_id) {
+				return the_user;
+			}
+		}
+		return null;
+	}
+	public int getid() {
+		
+	}
 }

@@ -30,7 +30,7 @@ public class ServerCore {
 	private int threadpool_thread_number;
 	/********************全局变量表*********************/
 	/********************public*********************/
-	
+	public DataBay myDataBay;
 	/********************private*********************/
 	private ServerSocket myServerSocket;
 	private ExecutorService myThreadPool;
@@ -46,12 +46,14 @@ public class ServerCore {
 		blockedthread_max=m_blockedthread_max;
 		portnumber=m_portmnuber;
 		debugmode=m_debugmode;
+		myDataBay=new DataBay();
 	}
 	public ServerCore(int m_threadpool_type,int m_blockedthread_max,int m_portmnuber) {//重载构造函数，默认非debug模式
 		threadpool_type=m_threadpool_type;
 		blockedthread_max=m_blockedthread_max;
 		portnumber=m_portmnuber;
 		debugmode=false;
+		myDataBay=new DataBay();
 	}
 	/*
 	 * 我觉得有必要建立测试用的推送机制
@@ -109,11 +111,10 @@ public class ServerCore {
 	 * 建立Socket链接的函数
 	 * 后面要把它加入线程池的一个线程里面
 	 */
-	public Socket setupScoket(int m_blockedThread_number) {//这是建立Socket链接的函数
-		Socket linkedSocket=null;//链接上的Scoket
+	public Socket setupSocket() {//这是建立Socket链接的函数
 		try {
-			linkedSocket = myServerSocket.accept();
-			m_blockedThread_number-= 1;//每链接成功一个就减一个，一直保持等待线程数量一定
+			Socket linkedSocket = myServerSocket.accept();
+			blockedThread_number-= 1;//每链接成功一个就减一个，一直保持等待线程数量一定
 			cout("connected client start to communicate!");
 			return linkedSocket;
 		} catch (Exception e) {
@@ -125,8 +126,11 @@ public class ServerCore {
 	 * 接下来就是建立用户对象了（user）
 	 * 建立对象并提供相应功能
 	 */
-	public void setupConnect() {
-		
+	public void service() {//添加其他功能请重写这个
+		Socket mySocket=setupSocket();
+		User myUser=new User(,mySocket, myDataBay);//id? 还不知道怎么获取
+		myDataBay.user_list.add(myUser);//把user加入到列表
+		myUser.start();
 	}
 	/*
 	 * 接下来就是任务分配部分
@@ -135,6 +139,28 @@ public class ServerCore {
 	 * 之所以还规定blocked线程的数量就是为了防止开局大量blocked线程加入线程池导致服务器直接崩溃
 	 */
 	public void distrubuteThread() {//这个函数是用来分配线程和使线程加入线程池
+		while(true) {
+			for(;blockedThread_number<blockedthread_max;blockedThread_number++) {
+				Thread service_thread=new Thread(service_runnable);
+				myThreadPool.submit(service_thread);
+			}
+		}
+	}
+	public Runnable service_runnable=new Runnable() {
 		
+		@Override
+		public void run() {
+			service();
+		}
+	};
+	/*
+	 * 启动函数
+	 * 传输核心的启动函数
+	 */
+	public void start() {
+		cout("ready to go");
+		setupServerSocket();
+		setupThreadPool(threadpool_type);
+		distrubuteThread();
 	}
 }

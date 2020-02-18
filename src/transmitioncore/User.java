@@ -1,10 +1,14 @@
 package transmitioncore;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.List;
 
-import transmitioncore.*;
+import transmitioncore.DataBay;
 
 public class User {
 	/*
@@ -16,12 +20,14 @@ public class User {
 	 */
 	/********************变量表*********************/
 	/********************对象定义变量表*********************/
-	private int user_id;
+	public int user_id;
 	private Socket user_Socket;
-	private int user_index;
+	//private int user_index;
+	private DataBay core_databay;
 	/********************全局变量表*********************/
 	/********************public*********************/
 	public List <Message> message_list;
+	public boolean checkpoint=true;
 	/********************private*********************/
 	private boolean debugmode;
 	private OutputStream ostream;
@@ -31,10 +37,10 @@ public class User {
 	/*
 	 * 构造函数
 	 */
-	public User(int m_user_id,int m_user_index,Socket m_user_Socket) {
+	public User(int m_user_id,Socket m_user_Socket,DataBay m_databay) {
 		user_id=m_user_id;
-		user_index=m_user_index;
 		user_Socket=m_user_Socket;
+		core_databay=m_databay;
 	}
 	/*
 	 * 我觉得有必要建立测试用的推送机制
@@ -57,8 +63,8 @@ public class User {
 	 * 数据上传函数
 	 * 把接收到的数据上传到ServerCore其他User的信息队列中
 	 */
-	public void pushMessage(Message m_message_push,DataBay m_DataBay) {
-		m_DataBay.user_list.get(m_message_push.target_id).message_list.add(m_message_push);//向目标列表添加数据
+	public void pushMessage(Message m_message_push) {
+		core_databay.getUser(m_message_push.target_id).message_list.add(m_message_push);//向目标列表添加数据
 	}
 	/*
 	 * 初始化发送数据函数
@@ -68,7 +74,7 @@ public class User {
 		try {
 			ostream = user_Socket.getOutputStream();
 			pwriter = new PrintWriter(ostream);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -80,7 +86,7 @@ public class User {
 		try {
 			istream = user_Socket.getInputStream();
 			breader = new BufferedReader(new InputStreamReader(istream));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -101,7 +107,7 @@ public class User {
 	 * 接受数据处理函数
 	 * 接受的数据是一个数组
 	 * 后期可以考虑加入校验程序
-	 */
+	 */ 
 	public Message receiveMessage() {//从物理上的用户接受的信息
 		try {
 			String message;
@@ -109,9 +115,37 @@ public class User {
 			Message message_receive=new Message(message);
 			message_receive.dealMessage();//这样就可以使用message对象的处理信息函数找出user_id
 			return message_receive;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+	/*
+	 * 下面是用户类的主程序
+	 * 包含创建新的线程
+	 * 交换数据
+	 */
+	public Runnable send_Runnable=new Runnable() {//定义一个线程runnable
+		
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			initSend();
+			while(checkpoint) {
+				sendMessage();
+			}
+		}
+	};
+	
+	public void start() {
+		Thread thread_send=new Thread(send_Runnable);
+		thread_send.start();
+		initReceive();
+		while(checkpoint) {
+			Message message_receive=receiveMessage();
+			if(message_receive!=null) {
+				pushMessage(message_receive);
+			}
 		}
 	}
 }
