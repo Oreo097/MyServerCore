@@ -11,6 +11,10 @@ public class Test {
 //		System.out.println(a_Sender_id);
 //		int a3=Integer.parseInt(a_Sender_id);
 //		System.out.println(a3);
+		
+		int a[]= {1,2,3,4,5,6,7,8,9,0};
+		System.out.println(a);
+		a[0]=(Integer) null;
+		System.out.println(a[0]);
 	}
-
 }

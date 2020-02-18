@@ -2,6 +2,8 @@ package transmitioncore;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.List;
+
 import transmitioncore.*;
 
 public class User {
@@ -19,6 +21,7 @@ public class User {
 	private int user_index;
 	/********************全局变量表*********************/
 	/********************public*********************/
+	public List <Message> message_list;
 	/********************private*********************/
 	private boolean debugmode;
 	private OutputStream ostream;
@@ -42,20 +45,20 @@ public class User {
 			System.out.println(m_output);
 		}
 	}
-	/*
-	 * 数据获取函数
-	 * 从ServerCore的矩阵中获取该user收到的信息
-	 */
-	public Message pullMessage(DataBay m_DataBay) {
-		Message message_pull=null;
-		return message_pull;
-	}
+//	/*
+//	 * 数据获取函数
+//	 * 从ServerCore的矩阵中获取该user收到的信息
+//	 */
+//	public Message pullMessage(DataBay m_DataBay) {
+//		Message message_pull=m_DataBay.messageArray[user_id][0];
+//		return message_pull;
+//	}
 	/*
 	 * 数据上传函数
 	 * 把接收到的数据上传到ServerCore其他User的信息队列中
 	 */
-	public void pushMessage(Message m_message,int m_index,DataBay m_DataBay) {
-		
+	public void pushMessage(Message m_message_push,DataBay m_DataBay) {
+		m_DataBay.user_list.get(m_message_push.target_id).message_list.add(m_message_push);//向目标列表添加数据
 	}
 	/*
 	 * 初始化发送数据函数
@@ -86,9 +89,13 @@ public class User {
 	 * 将要发送的数据发送至ServerCore类的二维数组里
 	 * 传输协议是 user_id_message_send_time
 	 */
-	public void sendMessage(Message m_message_send) {//向物理上的用户发送数据
-		pwriter.write(m_message_send.message);
-		pwriter.flush();
+	public void sendMessage() {//向物理上的用户发送数据
+		Message message_send=message_list.get(0);
+		if(message_send!=null) {
+			pwriter.write(message_send.message);
+			pwriter.flush();//清除缓冲区
+			message_list.remove(0);
+		}
 	}
 	/*
 	 * 接受数据处理函数
