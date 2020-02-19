@@ -110,6 +110,7 @@ public class ServerCore {
 	 */
 	public Socket setupSocket() {// 这是建立Socket链接的函数
 		try {
+			cout("waiting for connection");
 			Socket linkedSocket = myServerSocket.accept();
 			blockedThread_number -= 1;// 每链接成功一个就减一个，一直保持等待线程数量一定
 			cout("connected client start to communicate!");
@@ -139,6 +140,7 @@ public class ServerCore {
 			for (; blockedThread_number < blockedthread_max; blockedThread_number++) {
 				Thread service_thread = new Thread(service_runnable);
 				myThreadPool.submit(service_thread);
+				cout("thread submit");
 			}
 		}
 	}

@@ -2,7 +2,7 @@ package transmitioncore;
 
 import java.util.ArrayList;
 import java.util.Random;
-import transmitioncore.ShowInfo;;
+import transmitioncore.ShowInfo;
 
 public class DataBay {
 	/*
@@ -20,6 +20,7 @@ public class DataBay {
 		user_list = new ArrayList<User>();
 		main_checkpoint = true;
 		cleaner_checkpoint = false;
+		Cleaner();
 	}
 
 	/*
