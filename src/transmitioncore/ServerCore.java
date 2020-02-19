@@ -128,7 +128,7 @@ public class ServerCore {
 	 */
 	public void service() {//添加其他功能请重写这个
 		Socket mySocket=setupSocket();
-		User myUser=new User(,mySocket, myDataBay);//id? 还不知道怎么获取
+		User myUser=new User(myDataBay.creatId(),mySocket, myDataBay);//id? 还不知道怎么获取
 		myDataBay.user_list.add(myUser);//把user加入到列表
 		myUser.start();
 	}

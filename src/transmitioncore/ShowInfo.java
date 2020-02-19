@@ -41,5 +41,23 @@ public class ShowInfo {
 		time=year+"/"+month+"/"+date+"/"+hour+":"+minute+":"+second;
 		return time;
 	}
-
+	/*
+	 * 获取小时的函数
+	 */
+	public static int getHour() {
+		Calendar myCalendar = Calendar.getInstance();
+		int hour = myCalendar.get(Calendar.HOUR_OF_DAY);
+		return hour;
+	}
+	/*
+	 * 获取时间的函数
+	 */
+	public static String getTime_day() {
+		Calendar myCalendar = Calendar.getInstance();
+		int hour = myCalendar.get(Calendar.HOUR_OF_DAY);
+		int minute = myCalendar.get(Calendar.MINUTE);
+		int second = myCalendar.get(Calendar.SECOND);
+		String time=(""+hour)+(":"+minute)+(":"+second);
+		return time;
+	}
 }
