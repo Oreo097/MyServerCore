@@ -152,12 +152,25 @@ public class ServerCore {
 			service();
 		}
 	};
+	/*
+	 * 析构函数
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		// TODO Auto-generated method stub
+		super.finalize();
+		myServerSocket.close();//关闭端口
+		myThreadPool.shutdownNow();//关闭线程池
+		myDataBay.main_checkpoint=false;//指令关闭DataBay的线程
+		myDataBay=null;//清除DataBay对象
+		System.out.println("ShutDown");
+		}
 
 	/*
 	 * 启动函数 传输核心的启动函数
 	 */
 	public void start() {
-		cout("ready to go");
+		cout("ready to go"); 
 		setupServerSocket();
 		setupThreadPool(threadpool_type);
 		distrubuteThread();
