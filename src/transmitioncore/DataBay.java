@@ -1,5 +1,9 @@
 package transmitioncore;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Random;
 import transmitioncore.ShowInfo;
@@ -7,6 +11,9 @@ import transmitioncore.ShowInfo;
 public class DataBay {
 	/*
 	 * 数据中间存储的对象 用来存放一些数据 后期用来实现与SQL数据库对接
+	 */
+	/*
+	 * 程序逻辑打算这么设计，登陆时候进行验证，根据登录id匹配密码
 	 */
 	/******************** 全局变量表 *********************/
 	/******************** public *********************/
@@ -16,6 +23,14 @@ public class DataBay {
 	public boolean cleaner_checkpoint;
 
 	/******************** private *********************/
+	/******************** 数据库登录相关 *********************/
+	private String database_url = "jdbc:mysql://localhost:3306/userlist"
+			+ "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC";
+	private String database_username = "root";
+	private String database_passwd = "zhao1996";
+	private Connection connect;// 数据库的链接
+	private Statement stmt;// 数据库状态
+
 	public DataBay() {
 		user_list = new ArrayList<User>();
 		main_checkpoint = true;
@@ -35,13 +50,6 @@ public class DataBay {
 		return null;
 	}
 
-	/*
-	 * 获取user_id的函数
-	 */
-//	public int getid() {
-//		return id;
-//		
-//	}
 	/*
 	 * 生成user_id的函数
 	 */
@@ -103,9 +111,9 @@ public class DataBay {
 		if (time == "00:00:30") {
 			if (cleaner_checkpoint = true) {
 				cleaner_checkpoint = false;
-				System.out.println("cleaner check point is turned");
+				ServerCore.cout("cleaner check point is turned");
 			} else {
-				System.out.println("warring cleaner check point is not truned");
+				ServerCore.cout("warring cleaner check point is not truned");
 			}
 		}
 	}
@@ -127,5 +135,89 @@ public class DataBay {
 		};
 		Thread cleanerThread = new Thread(cleaner_Runnable);
 		cleanerThread.start();
+	}
+
+	/*
+	 * 数据库相关操作函数
+	 */
+	/*
+	 * 更改数据库登录信息的函数
+	 */
+	public void changeLoginInfo(String m_url, String m_username, String m_passwd) {
+		database_url = m_url + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC";
+		database_username = m_username;
+		database_passwd = m_passwd;
+	}
+
+	/*
+	 * 加载驱动程序函数
+	 */
+	public void initDriver() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver"); // 加载MYSQL JDBC驱动程序
+			// Class.forName("org.gjt.mm.mysql.Driver");
+			ServerCore.cout("Success loading Mysql Driver!");
+		} catch (Exception e) {
+			ServerCore.cout("Error loading Mysql Driver!");
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * 链接数据库函数
+	 */
+	public void connectDataBase() {
+		try {
+			connect = DriverManager.getConnection(database_url, database_username, database_passwd);
+			ServerCore.cout("Success connect Mysql server!");
+			stmt = connect.createStatement();
+
+		} catch (Exception e) {
+			ServerCore.cout("get data error!");
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * 从数据库获取密码
+	 */
+	public String getPasswd(int m_id) {
+		try {
+			ResultSet rs = stmt.executeQuery("select * from userinfo where id=" + m_id+";");
+			rs.next();// 光标指向下一行
+			String password = rs.getString("password");
+			return password;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/*
+	 * 从数据库中获取名字
+	 */
+	public String getName(int m_id) {
+		try {
+			ResultSet rs = stmt.executeQuery("select * from userinfo where id=" + m_id+";");
+			rs.next();// 光标指向下一行
+			String user_name = rs.getString("name");
+			return user_name;
+		}catch(Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/*
+	 * 添加数据库验证登录功能
+	 */
+	public boolean logIn(int m_id,String m_passwd) {
+		String passwd=getPasswd(m_id);
+		if(m_passwd==passwd) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }

@@ -18,24 +18,24 @@ public class User {
 	/******************** 对象定义变量表 *********************/
 	public int user_id;
 	private Socket user_Socket;
-	// private int user_index;
 	private DataBay core_databay;
 	/******************** 全局变量表 *********************/
 	/******************** public *********************/
 	public ArrayList<Message> message_list;
 	public boolean checkpoint = true;
+	public String user_name;
 	/******************** private *********************/
-	private boolean debugmode;
+	private boolean debugmode=true;
 	private OutputStream ostream;
 	private PrintWriter pwriter;
 	private InputStream istream;
 	private BufferedReader breader;
+	private Thread thread_send;
 
 	/*
 	 * 构造函数
 	 */
-	public User(int m_user_id, Socket m_user_Socket, DataBay m_databay) {
-		user_id = m_user_id;
+	public User(Socket m_user_Socket, DataBay m_databay) {
 		user_Socket = m_user_Socket;
 		core_databay = m_databay;
 	}
@@ -71,6 +71,7 @@ public class User {
 		try {
 			ostream = user_Socket.getOutputStream();
 			pwriter = new PrintWriter(ostream);
+			cout("function Send inited");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -83,6 +84,7 @@ public class User {
 		try {
 			istream = user_Socket.getInputStream();
 			breader = new BufferedReader(new InputStreamReader(istream));
+			cout("function Receive inited");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -116,6 +118,7 @@ public class User {
 		try {
 			String message;
 			message = breader.readLine();
+			cout(message);
 			Message message_receive = new Message(message);
 			message_receive.dealMessage();// 这样就可以使用message对象的处理信息函数找出user_id
 			return message_receive;
@@ -132,24 +135,56 @@ public class User {
 
 		@Override
 		public void run() {
-			// TODO Auto-generated method stub
-			initSend();
-			sendMessage("" + user_id);
 			while (checkpoint) {
 				sendMessage();
 			}
 		}
 	};
 
-	public void start() {
-		Thread thread_send = new Thread(send_Runnable);
-		thread_send.start();
-		initReceive();
-		while (checkpoint) {
-			Message message_receive = receiveMessage();
-			if (message_receive != null) {
-				pushMessage(message_receive);
+	/*
+	 * 登陆验证
+	 */
+	public boolean checkTicket() {
+		Message loginmessage = null;
+		receiveMessage();
+		//cout(loginmessage.message);
+		cout("start check password");
+		for (int i = 0; i < 5; i++) {// 密码最多错5次
+			while (loginmessage.message == null) {//检测是不是没输密码
+				sendMessage("denied"+i);
+				loginmessage = receiveMessage();
+				cout("deined");
+			}
+			if (loginmessage.message == core_databay.getPasswd(loginmessage.target_id)) {
+				sendMessage("accessed");
+				cout("User:" + loginmessage.sender_id + "login");
+				user_name=core_databay.getName(loginmessage.target_id);
+				return true;
 			}
 		}
+		cout("User:" + loginmessage.sender_id + "denied");
+		return false;
+	}
+
+	/*
+	 * 对象启动函数
+	 */
+	public void start() {
+		initSend();
+		initReceive();
+		if (checkTicket()) {
+			sendMessage(user_name);
+			thread_send = new Thread(send_Runnable);//启动发送信息的线程
+			thread_send.start();
+			while (checkpoint) {
+				Message message_receive = receiveMessage();
+				if (message_receive != null) {
+					pushMessage(message_receive);
+				}
+			}
+		} else {
+			cout("user access denied");
+		}
+
 	}
 }

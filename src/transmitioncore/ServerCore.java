@@ -16,10 +16,11 @@ public class ServerCore {
 	 */
 	/******************** 变量表 *********************/
 	/******************** 对象定义变量表 *********************/
+	public static boolean debugmode;
+	
 	private int threadpool_type;
 	private int blockedthread_max;
 	private int portnumber;
-	private boolean debugmode;
 	private int threadpool_thread_number;
 	/******************** 全局变量表 *********************/
 	/******************** public *********************/
@@ -53,8 +54,8 @@ public class ServerCore {
 	/*
 	 * 我觉得有必要建立测试用的推送机制 所以写了这个函数用于debug
 	 */
-	public void cout(String m_output) {// 实在不知道起什么名字所以就用了cout，我就不信cout在java里面能重名
-		if (debugmode == true) {
+	public static void cout(String m_output) {// 实在不知道起什么名字所以就用了cout，我就不信cout在java里面能重名
+		if (ServerCore.debugmode == true) {
 			System.out.println(m_output);
 		}
 	}
@@ -126,9 +127,9 @@ public class ServerCore {
 	 */
 	public void service() {// 添加其他功能请重写这个
 		Socket mySocket = setupSocket();
-		User myUser = new User(myDataBay.creatId(), mySocket, myDataBay);// id? 还不知道怎么获取
-		myDataBay.user_list.add(myUser);// 把user加入到列表
+		User myUser = new User(mySocket, myDataBay);// id? 还不知道怎么获取
 		myUser.start();
+		myDataBay.user_list.add(myUser);// 把user加入到列表
 	}
 
 	/*
@@ -173,6 +174,8 @@ public class ServerCore {
 		cout("ready to go"); 
 		setupServerSocket();
 		setupThreadPool(threadpool_type);
+		myDataBay.initDriver();
+		myDataBay.connectDataBase();
 		distrubuteThread();
 	}
 }

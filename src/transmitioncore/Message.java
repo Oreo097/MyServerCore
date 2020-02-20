@@ -14,7 +14,7 @@ public class Message {
 	public int target_id;
 	public int sender_id;
 	/******************** private *********************/
-	private boolean debugmode;
+	private boolean debugmode=true;
 
 	/*
 	 * 构造函数
@@ -33,7 +33,7 @@ public class Message {
 	}
 
 	/*
-	 * 处理Message的函数 主要是处理信息 获取target_name、sender_name
+	 * 处理Message的函数 主要是处理信息 获取target_name、sender_name 信息格式为 target_name-message-sender_name
 	 */
 	public void dealMessage() {
 		String can = message;
@@ -47,4 +47,11 @@ public class Message {
 		this.target_id = Integer.parseInt(target_id_String);// 转换成整数
 		this.sender_id = Integer.parseInt(sender_id_String);
 	}
+	/*
+	 * 取出信息的函数
+	 */
+	//public String getMessage() {
+		//String Message=null;
+		
+	//}
 }
