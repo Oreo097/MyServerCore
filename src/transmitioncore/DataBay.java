@@ -130,6 +130,12 @@ public class DataBay {
 				while (main_checkpoint) {
 					cleanList();
 					turnCheckPoint();
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						ServerCore.cout("failed to sleep");
+						e.printStackTrace();
+					}
 				}
 			}
 		};
@@ -186,6 +192,7 @@ public class DataBay {
 			ResultSet rs = stmt.executeQuery("select * from userinfo where id=" + m_id+";");
 			rs.next();// 光标指向下一行
 			String password = rs.getString("password");
+			ServerCore.cout("password is :"+password);
 			return password;
 		} catch (Exception e) {
 			e.printStackTrace();

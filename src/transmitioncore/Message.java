@@ -44,14 +44,32 @@ public class Message {
 		String sender_id_String = can.substring(target2 + 1);
 		cout("message is send to: " + target_id_String);
 		cout("message is send from: " + sender_id_String);
+		if(!check(target_id_String)) {
+			cout("target_id missed");
+		}
+		if(!check(sender_id_String)) {
+			cout("target_id missed");
+		}
 		this.target_id = Integer.parseInt(target_id_String);// 转换成整数
 		this.sender_id = Integer.parseInt(sender_id_String);
+	}
+	public boolean check(String m_message) {
+		if(m_message==""||m_message==null) {
+			return false;
+		}
+		return true;
 	}
 	/*
 	 * 取出信息的函数
 	 */
-	//public String getMessage() {
-		//String Message=null;
-		
-	//}
+	public String getMessage() {
+		String Message=null;
+		String can = message;
+		int target1, target2;// 索引两个“-”的位置
+		target1 = can.indexOf("-");
+		target2 = can.lastIndexOf("-");
+		Message=can.substring(target1+1,target2);
+		cout("Message.getmessage():"+Message);
+		return Message;
+	}
 }
