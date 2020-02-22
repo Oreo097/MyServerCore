@@ -42,19 +42,21 @@ public class Message {
 		target2 = can.lastIndexOf("-");
 		String target_id_String = can.substring(0, target1);
 		String sender_id_String = can.substring(target2 + 1);
-		cout("message is send to: " + target_id_String);
-		cout("message is send from: " + sender_id_String);
-		if(!check(target_id_String)) {
-			cout("target_id missed");
+		if(check(target_id_String)) {
+			this.target_id = Integer.parseInt(target_id_String);// 转换成整数
+		}else {
+			cout("dealMessage():target_id miss");
 		}
-		if(!check(sender_id_String)) {
-			cout("target_id missed");
+		if(check(sender_id_String)) {
+			this.sender_id = Integer.parseInt(sender_id_String);
+		}else {
+			cout("dealMessage():sebder_id miss");
 		}
-		this.target_id = Integer.parseInt(target_id_String);// 转换成整数
-		this.sender_id = Integer.parseInt(sender_id_String);
+		cout("message is send to: " + target_id);
+		cout("message is send from: " + sender_id);
 	}
 	public boolean check(String m_message) {
-		if(m_message==""||m_message==null) {
+		if(m_message.equals("")) {
 			return false;
 		}
 		return true;
@@ -71,5 +73,29 @@ public class Message {
 		Message=can.substring(target1+1,target2);
 		cout("Message.getmessage():"+Message);
 		return Message;
+	}
+	/*
+	 * 检测信息是否正确以及属于什么样的信息第一次传输的信息必须是登录信息，登陆后传输的信息必须是会话信息，如果信息错误将会被拒绝
+	 */
+	public static int checkMessage(String m_message) {
+		int target1 = m_message.indexOf("-");
+		int target2 = m_message.lastIndexOf("-");
+		int target3= m_message.indexOf(":");
+		if(target1==target2) {
+			return -1;
+		}
+		String target_id_String = m_message.substring(0, target1);
+		if(target_id_String.equals("")) {
+			return 1;
+		}
+		String sender_id_String = m_message.substring(target2 + 1);
+		if(sender_id_String.equals("")) {
+			return -1;
+		}
+		String sender_name_String=m_message.substring(target1+1,target3);
+		if(sender_name_String.equals("")) {
+			return -1;
+		}
+		return 0;
 	}
 }

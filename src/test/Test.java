@@ -12,9 +12,33 @@ import transmitioncore.ServerCore;
 
 public class Test {
 	public static void main(String[] args) {
-		hello myhello1=new hello("hello");
-		hello myhello2=new hello("hello");
+		String b=null;
+		String a="-zhao1996-2\n";
+		int c=a.indexOf("-");
+		b=a.substring(0,c);
+		cout(b);
+		if(b.equals("")) {
+			cout("yes");
 		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public static void cout(String m_output) {// 实在不知道起什么名字所以就用了cout，我就不信cout在java里面能重名
 			System.out.println(m_output);
 	}

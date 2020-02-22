@@ -22,16 +22,16 @@ public class User {
 	/******************** 全局变量表 *********************/
 	/******************** public *********************/
 	public ArrayList<Message> message_list;
-	public boolean message_checkpoint=false;
+	public boolean message_checkpoint = false;
 	public boolean checkpoint = true;
 	public String user_name;
 	/******************** private *********************/
-	private boolean debugmode=true;
+	private boolean debugmode = true;
 	private OutputStream ostream;
 	private PrintWriter pwriter;
 	private InputStream istream;
 	private BufferedReader breader;
-	//private Thread thread_send;
+	// private Thread thread_send;
 
 	/*
 	 * 构造函数
@@ -39,7 +39,7 @@ public class User {
 	public User(Socket m_user_Socket, DataBay m_databay) {
 		user_Socket = m_user_Socket;
 		core_databay = m_databay;
-		message_list=new ArrayList<Message>();
+		message_list = new ArrayList<Message>();
 	}
 
 	/*
@@ -55,21 +55,20 @@ public class User {
 	 * 数据上传函数 把接收到的数据上传到ServerCore其他User的信息队列中
 	 */
 	public void pushMessage(Message m_message_push) {
-		User user_target=null;
-		if((user_target=core_databay.getUser(m_message_push.target_id))!=null) {
-			cout("pushMessage(Message m_message_push):not null start push to "+m_message_push.target_id);
-			cout("pushMessage(Message m_message_push):user_target.userid "+user_target.user_id);
+		User user_target = null;
+		if ((user_target = core_databay.getUser(m_message_push.target_id)) != null) {
+			cout("pushMessage(Message m_message_push):not null start push to " + m_message_push.target_id);
+			cout("pushMessage(Message m_message_push):user_target.userid " + user_target.user_id);
 			user_target.message_list.add(m_message_push);// 向目标列表添加数据
-			cout("pushMessage(Message m_message_push):"+user_name+"message pushed");
-			user_target.message_checkpoint=true;
-		}
-		else {//发送反馈数据
+			cout("pushMessage(Message m_message_push):" + user_name + "message pushed");
+			user_target.message_checkpoint = true;
+		} else {// 发送反馈数据
 			cout("pushMessage(Message m_message_push):user is null");
-			//pushMessage(m_message_push);
+			// pushMessage(m_message_push);
 		}
 	}
 
-	/* 
+	/*
 	 * 初始化发送数据函数 只需要初始化一次
 	 */
 	public void initSend() {
@@ -94,6 +93,7 @@ public class User {
 			e.printStackTrace();
 		}
 	}
+
 	/*
 	 * 初始化函数
 	 */
@@ -101,23 +101,24 @@ public class User {
 		initSend();
 		initReceive();
 	}
+
 	/*
 	 * 数据发送函数 将要发送的数据发送至ServerCore类的二维数组里 传输协议是 user_id_message_send_time
 	 */
 	public void sendMessage_A() {// 向物理上的用户发送数据
-		//cout("sendMessage_A():start");
-		if(message_checkpoint==true) {
+		// cout("sendMessage_A():start");
+		if (message_checkpoint == true) {
 			try {
 				Message message_send = message_list.get(0);
-				pwriter.write(message_send.message+"\n");
-				cout(user_name+"sendMessage():sended");
+				pwriter.write(message_send.message + "\n");
+				cout(user_name + "sendMessage():sended");
 				pwriter.flush();// 清除缓冲区
-				cout(user_name+"sendMessage():flushed");
+				cout(user_name + "sendMessage():flushed");
 				message_list.remove(0);
-			}catch(Exception e) {
+			} catch (Exception e) {
 				cout("no message");
-				message_checkpoint=false;
-				e.printStackTrace();
+				message_checkpoint = false;
+				// e.printStackTrace();//去除了报错提示
 			}
 		}
 	}
@@ -126,10 +127,10 @@ public class User {
 	 * 重载函数，用来发送最初的握手信息和服务器的提示信息
 	 */
 	public void sendMessage_M(String message_send) {// 向物理上的用户发送数据
-		pwriter.write(message_send+"\n");
-		cout(user_name+"sendMessage(String message_send):sended");
+		pwriter.write(message_send + "\n");
+		cout(user_name + "sendMessage(String message_send):sended");
 		pwriter.flush();// 清除缓冲区
-		cout(user_name+" sendMessage(String message_send):flushed");
+		cout(user_name + " sendMessage(String message_send):flushed");
 	}
 
 	/*
@@ -139,10 +140,13 @@ public class User {
 		try {
 			String message;
 			message = breader.readLine();
-			cout("receiveMessage():"+message);
-			Message message_receive = new Message(message);
-			message_receive.dealMessage();// 这样就可以使用message对象的处理信息函数找出user_id
-			return message_receive;
+			if (Message.checkMessage(message) == 0) {// 增加验证消息准确性
+				Message message_receive = new Message(message);
+				message_receive.dealMessage();// 这样就可以使用message对象的处理信息函数找出user_id
+				return message_receive;
+			} else {
+				return null;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -150,33 +154,59 @@ public class User {
 	}
 
 	/*
+	 * 手动接收消息
+	 */
+	public String receiveMessage_M() {
+		try {
+			String message;
+			message = breader.readLine();
+			return message;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	/*
+	 * 验证密码
+	 */
+	public boolean checkPasswd(Message m_message) {
+		String passwd=core_databay.getPasswd(m_message.sender_id);
+		if(m_message.getMessage().equals(passwd)) {
+			cout("checkPasswd(Message m_message):pass");
+			return true;
+		}else {
+			cout("checkPasswd(Message m_message):passwd not ture");
+			sendMessage_M("password error");
+			return false;
+		}
+	}
+
+	/*
 	 * 登陆验证
 	 */
 	public boolean checkTicket() {
-		Message loginmessage = null;
-		loginmessage=receiveMessage();
-		cout(loginmessage.message);
-		cout("start check password");
-		for (int i = 0; i < 5; i++) {// 密码最多错5次
-			while (loginmessage.getMessage() == null) {//检测是不是没输密码
-				cout("deined");
-				sendMessage_M("denied");
-				loginmessage = receiveMessage();
+		for(int i=0;i<5;i++) {
+			String message=receiveMessage_M();
+			cout("checkTicket():received message is:"+message);
+			if(Message.checkMessage(message)!=1) {
+				sendMessage_M("message error");
+				cout("checkTicket():message error");
+				continue;
 			}
-			if (loginmessage.getMessage().equals( core_databay.getPasswd(loginmessage.sender_id))) {
-				sendMessage_M("accessed");
-				cout("User: " + loginmessage.sender_id + " login");
-				user_name=core_databay.getName(loginmessage.sender_id);
-				user_id=loginmessage.sender_id;
-				cout("checkTicket:user_id is "+user_id);
+			Message check_message=new Message(message);
+			check_message.dealMessage();
+			if(checkPasswd(check_message)==true) {
+				cout("checkTicket():User: "+user_name+"access");
+				user_id=check_message.sender_id;
+				user_name=core_databay.getName(user_id);
+				sendMessage_M("Access");
+				sendMessage_M(user_name);
 				return true;
 			}
-			else {
-				cout("access deined "+"this is the "+i+" try");
-				loginmessage=null;
-			}
+			cout("checkTicket():password error and this is the :"+i+" try");
 		}
-		cout("User:" + loginmessage.sender_id + " denied");
+		sendMessage_M("error too more");
+		cout("checkTicket():error too more");
 		return false;
 	}
 
@@ -188,7 +218,7 @@ public class User {
 		@Override
 		public void run() {
 			cout("send thread start");
-			while (checkpoint==true) {
+			while (checkpoint == true) {
 				sendMessage_A();
 				try {
 					Thread.sleep(500);
@@ -199,20 +229,18 @@ public class User {
 			}
 		}
 	};
-	
+
 	/*
-	 * 对象启动函数
-	 * 暂不使用
+	 * 对象启动函数 暂不使用
 	 */
 	public void start() {
 		init();
-		if (checkTicket()) {
-			sendMessage_M(user_name);
-			Thread thread_send = new Thread(send_Runnable);//启动发送信息的线程
+		if (checkTicket()==true) {
+			Thread thread_send = new Thread(send_Runnable);// 启动发送信息的线程
 			thread_send.start();
 			while (checkpoint) {
 				Message message_receive = receiveMessage();
-				cout("start():message_receive.message:"+message_receive.message);
+				cout("start():message_receive.message:" + message_receive.message);
 				pushMessage(message_receive);
 			}
 		} else {
