@@ -41,6 +41,7 @@ public class ServerCore {
 		portnumber = m_portmnuber;
 		debugmode = m_debugmode;
 		myDataBay = new DataBay();
+		blockedThread_number=0;
 	}
 
 	public ServerCore(int m_threadpool_type, int m_blockedthread_max, int m_portmnuber) {// 重载构造函数，默认非debug模式
@@ -49,6 +50,7 @@ public class ServerCore {
 		portnumber = m_portmnuber;
 		debugmode = false;
 		myDataBay = new DataBay();
+		blockedThread_number=0;
 	}
 
 	/*
@@ -114,6 +116,7 @@ public class ServerCore {
 			cout("waiting for connection");
 			Socket linkedSocket = myServerSocket.accept();
 			blockedThread_number -= 1;// 每链接成功一个就减一个，一直保持等待线程数量一定
+			cout("setupSocket():blockedThread_number: "+(blockedThread_number+1));
 			cout("connected client start to communicate!");
 			return linkedSocket;
 		} catch (Exception e) {
@@ -128,8 +131,17 @@ public class ServerCore {
 	public void service() {// 添加其他功能请重写这个
 		Socket mySocket = setupSocket();
 		User myUser = new User(mySocket, myDataBay);// id? 还不知道怎么获取
-		myDataBay.user_list.add(myUser);// 把user加入到列表
-		myUser.start();
+		myUser.init();
+		if(myUser.checkTicket()==true) {
+			myDataBay.user_list.add(myUser);// 把user加入到列表
+			myUser.start();
+		}
+			myUser.checkpoint=false;
+			int id=myUser.user_id;
+			if(id!=0) {
+				myDataBay.user_id_list.add(id);
+			}
+			myUser=null;
 	}
 
 	/*
@@ -138,11 +150,19 @@ public class ServerCore {
 	 */
 	public void distrubuteThread() {// 这个函数是用来分配线程和使线程加入线程池
 		while (true) {
-			for (; blockedThread_number < blockedthread_max; blockedThread_number++) {
+			if(blockedThread_number < blockedthread_max) {
 				Thread service_thread = new Thread(service_runnable);
 				myThreadPool.submit(service_thread);
-				cout("thread submit");
+				blockedThread_number++;
+				cout("distrubuteThread():thread submit");
 			}
+			try {
+				Thread.sleep(50);
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			
+			//cout("dist is still on");
 		}
 	}
 
@@ -176,6 +196,15 @@ public class ServerCore {
 		setupThreadPool(threadpool_type);
 		myDataBay.initDriver();
 		myDataBay.connectDataBase();
-		distrubuteThread();
+		Thread dist_thread=new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				distrubuteThread();
+			}
+		});
+		dist_thread.start();
+		
 	}
 }

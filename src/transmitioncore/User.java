@@ -40,6 +40,7 @@ public class User {
 		user_Socket = m_user_Socket;
 		core_databay = m_databay;
 		message_list = new ArrayList<Message>();
+		user_id=0;
 	}
 
 	/*
@@ -196,9 +197,9 @@ public class User {
 			Message check_message=new Message(message);
 			check_message.dealMessage();
 			if(checkPasswd(check_message)==true) {
-				cout("checkTicket():User: "+user_name+"access");
 				user_id=check_message.sender_id;
 				user_name=core_databay.getName(user_id);
+				cout("checkTicket():User: "+user_name+" access");
 				sendMessage_M("Access");
 				sendMessage_M(user_name);
 				return true;
@@ -234,8 +235,6 @@ public class User {
 	 * 对象启动函数 暂不使用
 	 */
 	public void start() {
-		init();
-		if (checkTicket()==true) {
 			Thread thread_send = new Thread(send_Runnable);// 启动发送信息的线程
 			thread_send.start();
 			while (checkpoint) {
@@ -243,9 +242,5 @@ public class User {
 				cout("start():message_receive.message:" + message_receive.message);
 				pushMessage(message_receive);
 			}
-		} else {
-			cout("user access denied");
-		}
-
 	}
 }

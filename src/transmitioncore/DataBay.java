@@ -51,7 +51,7 @@ public class DataBay {
 	}
 
 	/*
-	 * 生成user_id的函数
+	 * 生成user_id的函数   已废弃
 	 */
 	public synchronized int creatId() {
 		Random user_id_random = new Random();
@@ -82,9 +82,12 @@ public class DataBay {
 	 * 清理user列表的函数
 	 */
 	public synchronized void cleanNullUser() {
-		for (User i : user_list) {
-			if (i == null) {
-				user_list.remove(i);
+		for(int id=0;id<user_id_list.size();id++) {
+			for(int user=0;user<user_list.size();user++) {
+				if(user_list.get(user).user_id==id) {
+					user_list.remove(user);
+					user_id_list.remove(id);
+				}
 			}
 		}
 	}
@@ -96,9 +99,9 @@ public class DataBay {
 		String time = ShowInfo.getTime_day();
 		if (time == "00:00:00") {
 			if (cleaner_checkpoint = false) {
-				cleanNullId();
-				cleanList();
+				cleanNullUser();
 				cleaner_checkpoint = true;
+				ServerCore.cout("cleanList():Clean finsh");
 			}
 		}
 	}
@@ -111,9 +114,9 @@ public class DataBay {
 		if (time == "00:00:30") {
 			if (cleaner_checkpoint = true) {
 				cleaner_checkpoint = false;
-				ServerCore.cout("cleaner check point is turned");
+				ServerCore.cout("turnCheckPoint():cleaner check point is turned");
 			} else {
-				ServerCore.cout("warring cleaner check point is not truned");
+				ServerCore.cout("turnCheckPoint():warring cleaner check point is not truned");
 			}
 		}
 	}
@@ -227,4 +230,10 @@ public class DataBay {
 			return false;
 		}
 	}
+	/*
+	 * 找到User位置功能
+	 */
+	//public int getUserLocation(int m_user_id) {
+		
+	//}
 }
