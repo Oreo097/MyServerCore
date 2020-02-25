@@ -223,7 +223,7 @@ public class DataBay {
 	 */
 	public boolean logIn(int m_id,String m_passwd) {
 		String passwd=getPasswd(m_id);
-		if(m_passwd==passwd) {
+		if(m_passwd.equals(passwd)) {
 			return true;
 		}
 		else {
