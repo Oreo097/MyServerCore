@@ -7,7 +7,7 @@ public class Main {
 	public static void main(String[] args) {
 		ShowInfo.showNetInfo();//显示网络数据
 		ShowInfo.showServerInfo();//显示服务器数据
-		ServerCore myServerCore=new ServerCore(0, 2, 1900,true);//创建对象
+		ServerCore myServerCore=new ServerCore(0, 5, 1900,true);//创建对象
 		myServerCore.start();//启动服务
 	}
 }
